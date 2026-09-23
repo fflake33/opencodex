@@ -14,3 +14,9 @@ one promise. After teardown starts only the lifecycle's own abort reason is abso
 error, including a foreign AbortError, still fails its case. Callers settle that lifecycle before
 draining producers/reaps and restoring or removing a home. The helper does not replace
 fixture-specific cleanup or claim OS ACL coverage for synthetic tests.
+
+Service claim fixtures bind both their config home and their OS home, because service ownership
+also reads the default-home authority. `scripts/test.ts` runs service-home ownership and native
+toggle/admission fixtures in fresh singleton processes; a prior file's authority must not become
+their input. The launcher runtime probe also runs alone to keep synchronous Node probes out of
+the long-lived macOS Bun isolate pool. Assertions and file membership are unchanged.

@@ -589,6 +589,7 @@ test("two processes at the post-approval management seam serialize instead of in
         together: {
           adapter: "openai-chat",
           baseUrl: "https://api.together.xyz/v1",
+          allowPrivateNetwork: true, // Fixture fetch is local; host DNS must not gate the barrier.
           apiKey: "seam-key",
           models: ["fallback-model"],
         },

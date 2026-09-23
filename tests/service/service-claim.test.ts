@@ -1,4 +1,5 @@
-import { describe, expect, test } from "bun:test";
+import { describe, expect, spyOn, test } from "bun:test";
+import * as os from "node:os";
 import { mkdirSync, statSync } from "node:fs";
 import { parseClaimArgs, runServiceClaim, CLAIM_SCHEMA } from "../../src/service/claim";
 import { ServiceOwnershipSubjectMismatchError, serviceStatePath, serviceStatePaths } from "../../src/service/state";
@@ -144,6 +145,7 @@ describe("runServiceClaim", () => {
 
   test("an unreadable sandbox state refuses a real claim", async () => {
     const home = createTempHome("ocx-claim-refusal-");
+    const homeLookup = spyOn(os, "homedir").mockReturnValue(home.root);
     const previousUserProfile = process.env.USERPROFILE;
     if (process.platform === "win32") process.env.USERPROFILE = home.root;
     try {
@@ -159,6 +161,7 @@ describe("runServiceClaim", () => {
       });
       expect(statSync(serviceStatePath()).isDirectory()).toBe(true);
     } finally {
+      homeLookup.mockRestore();
       if (process.platform === "win32") {
         if (previousUserProfile === undefined) delete process.env.USERPROFILE;
         else process.env.USERPROFILE = previousUserProfile;

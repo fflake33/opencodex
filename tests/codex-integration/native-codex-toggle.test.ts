@@ -11,7 +11,7 @@
  * so a process that dies between the two leaves a decision the next start can
  * act on — rather than artifacts the next start silently undoes.
  */
-import { afterEach, beforeEach, describe, expect, test } from "bun:test";
+import { afterEach, beforeEach, describe, expect, spyOn, test } from "bun:test";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, realpathSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
@@ -20,12 +20,15 @@ import { handleManagementAPI } from "../../src/server/management-api";
 import type { ManagementApiDeps } from "../../src/server/management/context";
 import type { OcxConfig } from "../../src/types";
 import { removeTreeWithRetry } from "../helpers/remove-tree";
+import * as ownershipPreflight from "../../src/integrations/native/ownership-preflight";
+import { ownedServiceHomeInspection } from "../helpers/owned-service-home-inspection";
 
 let fixtureRoot = "";
 let codexHome = "";
 let previousOpencodexHome: string | undefined;
 let previousCodexHome: string | undefined;
 const cleanup: string[] = [];
+let ownership: ReturnType<typeof spyOn<typeof ownershipPreflight, "inspectNativeCodexOwnership">>;
 
 function baseConfig(): OcxConfig {
   return {
@@ -73,6 +76,9 @@ function persistedCodexIntent(): unknown {
 }
 
 beforeEach(() => {
+  // This tests toggle/state behavior, not the developer's live launchd/systemd registration.
+  ownership = spyOn(ownershipPreflight, "inspectNativeCodexOwnership")
+    .mockImplementation(ownedServiceHomeInspection("native Codex toggle fixture"));
   previousOpencodexHome = process.env.OPENCODEX_HOME;
   previousCodexHome = process.env.CODEX_HOME;
   // Native realpath resolves macOS /var aliases and expands Windows RUNNER~1
@@ -93,6 +99,7 @@ beforeEach(() => {
 });
 
 afterEach(() => {
+  ownership.mockRestore();
   if (previousOpencodexHome === undefined) delete process.env.OPENCODEX_HOME;
   else process.env.OPENCODEX_HOME = previousOpencodexHome;
   if (previousCodexHome === undefined) delete process.env.CODEX_HOME;

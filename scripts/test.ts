@@ -357,6 +357,8 @@ export const SERIAL_FULL_SUITE_FILES = [
   // Synchronous injection subprocesses can wedge the long-lived macOS isolate
   // parent while reaping a history Worker; contain them in a fresh bounded lane.
   "codex-integration/codex-inject-write-lock.test.ts",
+  // Node's synchronous launcher probes can wedge the long-lived macOS isolate pool.
+  "cli/ocx-launcher-runtime.test.ts",
   "update/update-stop-first.test.ts",
   // Relays a 50 MiB WebSocket frame end to end against a 15s deadline, so its result is a
   // measurement of the whole process, not of the relay. On a healthy 3-CPU macOS runner the
@@ -371,8 +373,12 @@ export const SERIAL_FULL_SUITE_FILES = [
   // A fresh process/home prevents another file's authority from becoming this fixture's input.
   "service/service-ownership-state.test.ts",
   "service/service-sqlite-home.test.ts",
+  "service/service-claim.test.ts",
+  "service/service-wsl-home-ownership.test.ts",
   "service/service.test.ts",
   "codex-integration/native-grok-toggle.test.ts",
+  "codex-integration/native-codex-toggle.test.ts",
+  "codex-integration/bearer-admission-routed-provider.test.ts",
 ] as const;
 
 type SerialLaneBasename = (typeof SERIAL_FULL_SUITE_FILES)[number] extends infer P

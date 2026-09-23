@@ -544,6 +544,10 @@ describe("bun test argv", () => {
     }
     expect(plan.find(lane => lane.label === "release-helper.test.ts")?.timeoutMs).toBe(5 * 60 * 1000);
     expect(plan.find(lane => lane.label === "codex-shim.test.ts")?.timeoutMs).toBe(3 * 60 * 1000);
+    for (const file of ["ocx-launcher-runtime", "service-claim", "service-wsl-home-ownership",
+      "native-codex-toggle", "bearer-admission-routed-provider"]) {
+      expect(plan.find(lane => lane.label === `${file}.test.ts`)?.args).toContain("--parallel=1");
+    }
   });
 
   test("a control budget is bounded and changes only the main lane", () => {
